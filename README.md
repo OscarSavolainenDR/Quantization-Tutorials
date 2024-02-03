@@ -1,5 +1,5 @@
 # Quantization-Tutorials
-A bunch of coding tutorials for my [Youtube videos on Neural Network Quantization](https://www.youtube.com/@NeuralNetworkQuantization)https://www.youtube.com/@NeuralNetworkQuantization.
+A bunch of coding tutorials for my [Youtube videos on Neural Network Quantization](https://www.youtube.com/@NeuralNetworkQuantization).
 
 ## ResNet:
 
