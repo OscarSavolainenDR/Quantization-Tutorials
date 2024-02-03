@@ -10,17 +10,11 @@ To run this code, you need to have PyTorch installed in your environment. If you
 I created this code with PyTorch Version: 2.1.1. In case you have any versioning issues, you can revert to that version.
 
 ### Running this code:
-Once you have PyTorch installed, first create a directory you will be working from, e.g. `quant_tutorials`. E.g., on Linux one would run
-```
-mkdir quant_tutorials
-```
+Once you have PyTorch installed, first navigate to a directory you will be working from. As you follow the next steps, your final file structure will look like this: `your-directory\Quantization-Tutorials\Resnet`.
 
-Next, `cd` into that folder, e.g.
-```
-cd quant_tutorials
-```
+Next, from `your-directory`, clone the `Quantization-Tutorials` repo. This contains different tutorials, but they are all interlinked. Feel no need to do any of the others! I just structured it this way because the tutorials share a lot of code and it might help people to see different parts in one place.
 
-Next, we will clone the `Quantization-Tutorials` repo. This contains different tutorials, but they are all interlinked. Feel no need to do any of the others! I just structured it this way because the tutorials share a lot of code and it might help people to see different parts in one place.
+You can also `git init` and then `git pull/fetch`, depending on what you prefer.
 
 To clone the repo, run
 ```
