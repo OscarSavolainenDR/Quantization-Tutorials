@@ -7,6 +7,8 @@ This is the finished code associated with the Youtube tutorial at:
 ### Prerequisities:
 To run this code, yopu need to have PyTorch installed in your environment. If you do not have PyTorch installed, please follow this [official guide](https://pytorch.org/get-started/locally/).
 
+I created this code with PyTorch Version: 2.1.1. In case you have any versioning issues, you can revert to that version.
+
 ### Running this code:
 Once you have PyTprch isntalled,  merely `cd` into this folder, and run `python quant_resnet.py` from your command line! 
 
