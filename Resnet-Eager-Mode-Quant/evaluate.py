@@ -2,6 +2,20 @@ import torch
 
 def evaluate(model, device_str: str):
     # Download an example image from the pytorch website
+    """
+    The provided code defines a Python function called `evaluate` that allows a
+    PyTorch model to be run on a sample image from the ImageNet dataset and generates
+    probability distributions for each of the 1000 classes.
+
+    Args:
+        model (): The model input parameter is a pre-trained PyTorch model. It's
+            used to process an input image via the model and receive an output
+            containing class probabilities.
+        device_str (str): The `device_str` input parameter specifies whether the
+            computation should be executed on CPU or GPU. If device str is 'cuda'
+            then it will be run only if CUDA is available
+
+    """
     import urllib
     url, filename = ("https://github.com/pytorch/hub/raw/master/images/dog.jpg", "dog.jpg")
     try: urllib.URLopener().retrieve(url, filename)
