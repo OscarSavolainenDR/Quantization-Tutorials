@@ -10,7 +10,7 @@ from qconfigs import learnable_act, learnable_weights, fixed_act
 
 from model.resnet import resnet18
 
-model = resnet18(pretrained=True)
+model = resnet18(weights='resnet18_weights.default')
 
 # from torch.ao.quantization import get_default_qconfig_mapping
 # qconfig_mapping = get_default_qconfig_mapping("fbgemm")

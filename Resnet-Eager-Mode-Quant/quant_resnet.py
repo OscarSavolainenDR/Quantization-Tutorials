@@ -4,7 +4,7 @@ from model.resnet import resnet18
 from evaluate import evaluate
 
 
-model = resnet18(pretrained=True)
+model = resnet18(weights='ResNet18_Weights.DEFAULT')
 # print(model)
 
 # Step 1: architecture changes
