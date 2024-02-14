@@ -30,7 +30,7 @@ for name, module in fused_model.named_modules():
     module.qconfig = qconfig
 
 # Step 4: Prepare for fake-quant
-fake_quant_model = torch.ao.quantization.prepare(fused_model)
+fake_quant_model = torch.ao.quantization.prepare_qat(fused_model)
 
 # Evaluate
 print('\noriginal')
