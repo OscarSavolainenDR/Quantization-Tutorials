@@ -186,7 +186,8 @@ def store_shape_dtype(node, result):
     if isinstance(result, torch.Tensor):
         node.shape = result.shape
         node.dtype = result.dtype
-
+# NOTE: I just discovered that they have the `Interpreter` class, which accomplishes the same thing:
+# https://pytorch.org/docs/stable/fx.html#torch.fx.Interpreter
 GraphIteratorStorage(fx_model, store_shape_dtype).propagate(example_inputs[0])
 for node in fx_model.graph.nodes:
     print(node.name, node.shape, node.dtype)
