@@ -2,6 +2,24 @@ import torch
 
 def evaluate(model, device_str: str):
     # Download an example image from the pytorch website
+    """
+    This function `evaluate` takes a pre-trained PyTorch model and tests its
+    performance on an ImageNet validation dataset by downloading and feeding an
+    example image into the model while executing it on a CPU or CUDA GPU (if available).
+
+    Args:
+        model (): The model is passed as an argument to the functions `to()` method
+            that changes its device based on specified strings: 'cuda' or 'cpu'.
+            The current code has no device selection therefore all it does for now
+            is a rudimentary check and a basic assert that is unessasrial when
+            using cuda. The actual purpose of this model input argument serves as
+            an object on which we set device type using the methods of Torch class/module.
+        device_str (str): The `device_str` parameter is used to specify whether
+            the input tensor and model should be moved to either the GPU (if
+            available) or the CPU. The string should be set to either `'cpu'` or
+            `'cuda'`.
+
+    """
     import urllib
     url, filename = ("https://github.com/pytorch/hub/raw/master/images/dog.jpg", "dog.jpg")
     try: urllib.URLopener().retrieve(url, filename)
