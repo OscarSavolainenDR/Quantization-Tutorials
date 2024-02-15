@@ -16,7 +16,7 @@ learnable_act = lambda range : LearnableFakeQuantize.with_args(
     use_grad_scaling=True,
 )
 
-learnable_weights = LearnableFakeQuantize.with_args(  # need to specify number of channels here
+learnable_weights = lambda channels : LearnableFakeQuantize.with_args(  # need to specify number of channels here
     observer=tq.PerChannelMinMaxObserver,
     quant_min=-128,
     quant_max=127,
@@ -25,7 +25,7 @@ learnable_weights = LearnableFakeQuantize.with_args(  # need to specify number o
     scale=0.1,
     zero_point=0.0,
     use_grad_scaling=True,
-    # channel_len=channels,
+    channel_len=channels,
 )
 
 fixed_act = lambda min , max : FixedQParamsFakeQuantize.with_args(

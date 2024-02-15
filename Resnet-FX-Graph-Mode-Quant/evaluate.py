@@ -28,6 +28,7 @@ def evaluate(model, device_str: str):
 
     input_batch = input_batch.to(device_str)
     model.to(device_str)
+    model.eval()
 
     with torch.no_grad():
         output = model(input_batch)

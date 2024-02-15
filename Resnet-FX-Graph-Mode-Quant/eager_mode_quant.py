@@ -4,7 +4,7 @@ from model.resnet import resnet18
 from evaluate import evaluate
 
 
-model = resnet18(weights='resnet18_weights.default')
+model = resnet18(pretrained=True)
 # print(model)
 
 # Step 1: architecture changes
@@ -30,6 +30,7 @@ for name, module in fused_model.named_modules():
     module.qconfig = qconfig
 
 # Step 4: Prepare for fake-quant
+fused_model.train()
 fake_quant_model = torch.ao.quantization.prepare_qat(fused_model)
 
 # Evaluate
