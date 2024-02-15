@@ -1,8 +1,9 @@
-# How to Quantize a ResNet from Scratch (Eager Mode Static Quantization)
+# How to Quantize a ResNet from Scratch (Eager Mode Dynamic Quantization)
 
 This is the finished code associated with the Youtube tutorial at:
 
-[![How to Quantize a Resnet to Int8 from scratch (Eager Mode Coding Tutorial)](https://ytcards.demolab.com/?id=8dLSVrnuBXM&title=How+to+Quantize+a+Resnet+to+Int8+from+scratch+(Coding+Tutorial)&lang=en&timestamp=1706473016&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "How to Quantize a Resnet to Int8 from scratch (Eager Mode Coding Tutorial)")](https://www.youtube.com/watch?v=8dLSVrnuBXM)
+**TODO**
+
 
 ### Prerequisites:
 To run this code, you need to have PyTorch installed in your environment. If you do not have PyTorch installed, please follow this [official guide](https://pytorch.org/get-started/locally/).
@@ -21,12 +22,12 @@ To clone the repo, run:
 git clone git@github.com:OscarSavolainenDR/Quantization-Tutorials.git .
 ```
 
-If you did the cloning in place with the `.` at the end, your folder structure should look like `your-folder/Resnet-Eager-Mode-Quant`, with various other folders for other tutorials.
+If you did the cloning in place with the `.` at the end, your folder structure should look like `your-folder/Resnet-Eager-Mode-Dynamic-Quant`, with various other folders for other tutorials.
 
 Next, cd into the Resnet Eager Mode Quantization tutorial:
 ```
-cd Resnet-Eager-Mode-Quant
+cd Resnet-Eager-Mode-Dynamic-Quant
 ```
-Then, just run `python quant_resnet.py` from your command line! However I would obviously recommend that you follow along with the tutorial, so that you learn how it all works and get your hands dirty.
+Then, just run `python quant_dynamic_resnet.py` from your command line! However I would obviously recommend that you follow along with the tutorial, so that you learn how it all works and get your hands dirty.
 
 Let me know if there are any issues!

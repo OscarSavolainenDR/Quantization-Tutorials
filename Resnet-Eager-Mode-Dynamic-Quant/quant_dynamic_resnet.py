@@ -32,11 +32,17 @@ for name, module in fused_model.named_modules():
 fused_model.train()
 fake_quant_model = torch.ao.quantization.prepare_qat(fused_model)
 
+# Step 4b: Try dynamic quantization
+fake_quant_model_dynamic = torch.quantization.quantize_dynamic(model)
+
 # Evaluate
 print('\noriginal')
 evaluate(model, 'cpu')
 print('\nfused')
 evaluate(fused_model, 'cpu')
+
+print('\ndynamic')
+evaluate(fake_quant_model_dynamic, 'cpu')
 
 
 # Step 5: convert (true int8 model)

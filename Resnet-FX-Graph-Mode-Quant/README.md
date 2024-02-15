@@ -1,4 +1,4 @@
-# How to do FX Graph Mode Quantization of a ResNet
+# How to do FX Graph Mode Quantization of a ResNet (Static)
 
 This is the finished code associated with the Youtube tutorial at:
 
