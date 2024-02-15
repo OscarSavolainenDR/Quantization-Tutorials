@@ -37,19 +37,15 @@ qconfig_QS_DQ = tq.QConfig(
 qconfig_mapping = QConfigMapping().set_object_type((taq.QuantStub, taq.DeQuantStub), qconfig_QS_DQ) \
                                 .set_object_type(nnq.FloatFunctional, qconfig_FF)
 
-from torch.ao.quantization.observer import MinMaxObserver
+# Awkward we have to do this manually, just for the sake of accessing the `out_channels` attribute
 for name, module in model.named_modules():
     if hasattr(module, 'out_channels'):
-        #qconfig = torch.ao.quantization.QConfig(
-                #activation=MinMaxObserver.with_args(dtype=torch.qint8),
-                #weight=MinMaxObserver.with_args(dtype=torch.qint8))
         qconfig = tq.QConfig(
             activation=learnable_act(range=2),
             weight=learnable_weights(channels=module.out_channels)
         )
         qconfig_mapping.set_module_name(name, qconfig)
         module.qconfig = qconfig
-
 
 
 example_inputs = (torch.randn(1, 3, 224, 224),)
@@ -59,8 +55,13 @@ fx_model = prepare_qat_fx(model, qconfig_mapping, example_inputs)
 
 model.train()
 fake_quant_model = tq.prepare_qat(model, inplace=False)
-fx_model.eval()
 
+# NOTE: need to figure out how to place the fixed qparams qconfig correctly
+# at beginning and end. Also, mention that PTQ is on in both cases, so we are cheating
+# by doing dynamic quant to some degree.
+# `activation_post_process` is also moved outside the module, so each module has
+# a `weight_fake_quant` attribute, but the `activation_post_process` is a seperate requantization
+# step, and it isn't attached.
 print('\n Original')
 evaluate(model, 'cpu')
 
