@@ -10,6 +10,18 @@ To run this code, you need to have PyTorch installed in your environment. If you
 
 I created this code with PyTorch Version: 2.1.1. In case you have any versioning issues, you can revert to that version.
 
+To run `fx_model.graph.print_tabular()`, one needs to have `tabulate` installed. To do, activate your (e.g. conda) environment and run
+```
+pip install tabulate
+```
+
+To plot the graph as a tree in an SVG file, i.e. to run:
+```
+g = passes.graph_drawer.FxGraphDrawer(fx_model, 'resnet18-fx-model')
+```
+
+One needs to install GraphViz and have it on PATH (or as a local PATH variable).
+
 ### Running this code:
 Once you have PyTorch installed, first navigate to a directory you will be working from. As you follow the next steps, your final file structure will look like this: `your-directory/Resnet-FX-Graph-Mode-Quant`.
 

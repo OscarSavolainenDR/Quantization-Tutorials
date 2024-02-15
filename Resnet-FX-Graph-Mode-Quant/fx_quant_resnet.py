@@ -71,12 +71,16 @@ evaluate(fx_model, 'cpu')
 print('\n Eager mode prepared')
 evaluate(fake_quant_model, 'cpu')
 # Can experiment with visualize the graph, e.g.
-# >> prepared_model
-# >> print(prepared_model.graph)  # prints the DAG
+# >> fx_model
+# >> print(fx_model.graph)  # prints the DAG
+
+# Prints the graph as a table
+print("\nGraph as a Table:\n")
+fx_model.graph.print_tabular()
 xxx
 # Plots the graph
 # Need to install GraphViz and have it on PATH (or as a local PATH variable)
 #from torch.fx import passes
-#g = passes.graph_drawer.FxGraphDrawer(fake_quant_model, 'resnet18-fakequant')
+#g = passes.graph_drawer.FxGraphDrawer(fx_model, 'fx-model')
 #with open("graph.svg", "wb") as f:
     #f.write(g.get_dot_graph().create_svg())
