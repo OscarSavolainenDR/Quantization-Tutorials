@@ -11,6 +11,6 @@ We discuss common issues one can run into, as well as some interesting but trick
 
 # Resnet-FX-Graph-Mode-Quant:
 
-**TODO**
+**TODO** 
 
-In this tutorial, we use Torch's FX Graph mode quantization to quantize a ResNet. We look at the Directed Acyclic Graph (DAG), at how the fusing, placement of quantstubs and FloatFunctionals all happen automatically, and compare it to Eager mode.
+In this tutorial, we use Torch's FX Graph mode quantization to quantize a ResNet. We look at the Directed Acyclic Graph (DAG), at how the fusing, placement of quantstubs and FloatFunctionals all happen automatically, and compare it to Eager mode, e.g. how the location of the requantization stpe will now be different.
