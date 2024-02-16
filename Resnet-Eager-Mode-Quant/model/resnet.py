@@ -80,17 +80,15 @@ class BasicBlock(nn.Module):
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = norm_layer(planes)
-        self.relu1 = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
-        self.FFAddReLU = torch.ao.nn.quantized.FloatFunctional()
-        # self.relu_out = nn.ReLU(inplace=True)
         self.stride = stride
 
     def modules_to_fuse(self, prefix):
         modules_to_fuse_ = []
-        modules_to_fuse_.append([f'{prefix}.conv1', f'{prefix}.bn1', f'{prefix}.relu1'])
+        modules_to_fuse_.append([f'{prefix}.conv1', f'{prefix}.bn1', f'{prefix}.relu'])
         modules_to_fuse_.append([f'{prefix}.conv2', f'{prefix}.bn2'])
         if self.downsample:
             modules_to_fuse_.append([f'{prefix}.downsample.0', f'{prefix}.downsample.1'])
@@ -102,7 +100,7 @@ class BasicBlock(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu1(out)
+        out = self.relu(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -110,8 +108,8 @@ class BasicBlock(nn.Module):
         if self.downsample is not None:
             identity = self.downsample(x)
 
-        out = self.FFAddReLU.add_relu(out, identity)
-        # out = self.relu_out(out)
+        out += identity
+        out = self.relu(out)
 
         return out
 

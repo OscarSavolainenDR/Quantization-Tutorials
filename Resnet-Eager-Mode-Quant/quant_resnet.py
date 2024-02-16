@@ -1,8 +1,6 @@
 import torch
 from model.resnet import resnet18
 
-from evaluate import evaluate
-
 model = resnet18(pretrained=True)
 print(model)
 
@@ -21,36 +19,13 @@ model.eval()
 fused_model = torch.ao.quantization.fuse_modules(model, modules_to_list)
 
 # Step 3: Assign qconfigs
-backend = 'fbgemm'
-qconfig = torch.quantization.get_default_qconfig(backend)
-torch.backends.quantized.engine = backend
 
-for name, module in fused_model.named_modules():
-    module.qconfig = qconfig
 
 # Step 4: Prepare for fake-quant
-fused_model.train()
-fake_quant_model = torch.ao.quantization.prepare_qat(fused_model)
-
-# Evaluate
-print('\noriginal')
-evaluate(model, 'cpu')
-print('\nfused')
-evaluate(fused_model, 'cpu')
 
 
 # Step 5: convert (true int8 model)
-fake_quant_model.to('cpu')
-converted_model = torch.quantization.convert(fake_quant_model)
-
-print('\nfake quant')
-evaluate(fake_quant_model, 'cpu')
 
 
-print('\nconverted')
-evaluate(converted_model, 'cpu')
-
-
-# ## Torch compile
-# compiled_model = torch.compile(model)
-# print(compiled_model)
+import ipdb
+ipdb.set_trace()
