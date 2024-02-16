@@ -90,6 +90,31 @@ fx_model.graph.print_tabular()
 # NOTE: taken from https://pytorch.org/docs/stable/fx.html#graph-manipulation
 def transform(m: torch.nn.Module,
               tracer_class : type = fx.Tracer) -> torch.nn.Module:
+    """
+    This function takes a PyTorch module `m` and returns a new PyTorch module that
+    transforms the original module by applying a specific transformation to any
+    function calls found within the original module's graph. The transformation
+    is specified by a custom tracer class that iterates through the graph nodes
+    and checks if the current node is a call function node. If it is a call function
+    node and the target function is `torch.add`, the tracer replaces the target
+    attribute with `torch.mul`. The transformed graph is then wrapped into a
+    `fx.GraphModule` to produce the final transformed module.
+
+    Args:
+        m (torch.nn.Module): The `m` parameter is the torch.nn module to be transformed.
+        tracer_class (fx.Tracer): The tracer class parameter is an optional argument
+            that can be set to any instance of the FX Tracer class; if left unset
+            ("FX.Tracer"), then it uses the default FX Tracer instance. When you
+            use a custom tracer object other than the standard one by specifying
+            a type other than FX.Tracer as the argument value., It's an optional
+            argument and can be specified only if needed
+
+    Returns:
+        torch.nn.Module: The output of the given function is a Torch graph module
+        object (`fx.GraphModule`) wrapped around the original input PyTorch model
+        instance (`m`).
+
+    """
     graph : fx.Graph = tracer_class().trace(m)
     # FX represents its Graph as an ordered list of
     # nodes, so we can iterate through them.
@@ -135,19 +160,90 @@ class GraphIteratorStorage:
     its respective `Node`, for the given input to `propagate`.
     """
     def __init__(self, mod, storage):
+        """
+        This function is initializing an object for the class `MyModule` with the
+        arguments `mod` and `storage`. It sets the object's attributes `mod`,
+        `graph`, and `modules` to the corresponding values from the argument `mod`,
+        and sets the attribute `storage` to the value of the argument `storage`.
+
+        Args:
+            mod (): The input `mod` parameter is a module object that the class
+                instance is being created for. It holds the modules attributes
+                like graph and named modules
+            storage (dict): Here's the definition:
+                
+                def __init__(self (...)storage):
+                     ...
+                
+                It means that during instance creation of an object based on this
+                class - which might be refered to as "module" by convention here
+                due to graph and mod attributes created within the body of its
+                class scope using the values passed as parameters upon initialization
+                of said module - the function accepts one parameter 'storage';
+                which is also then saved under the attribute called 'storage'.
+
+        """
         self.mod = mod
         self.graph = mod.graph
         self.modules = dict(self.mod.named_modules())
         self.storage = storage
 
     def propagate(self, *args):
+        """
+        This is a Python function `propagate` defined inside another object-oriented
+        language construct such as a class or module. Its purpose is to interpret
+        a Graph Module format description of computations written using the Torch
+        Fusion API and propagate the computation by executing each node and storage
+        operation within the graph. It also takes an optional arg `*args`, which
+        it doesn't seem to use (although that could have been changed somewhere
+        higher up and broken here).
+
+        """
         args_iter = iter(args)
         env : Dict[str, Node] = {}
 
         def load_arg(a):
+            """
+            This function maps each argument `a` of the function to an environment
+            variable `env[n.name]`
+
+            Args:
+                a (): The `a` input parameter is a tensor that gets passed into
+                    the function `load_arg()`. This tensor gets used to look up
+                    entries within the `env` dictionary using its string values
+                    as keys to extract these entries. The goal of doing so is to
+                    turn these key-value pairs into PyTorch TensorArguments for
+                    efficient handling later on downstream.
+
+            Returns:
+                : The output returned by the function "load_arg" is a Python dictionary.
+
+            """
             return torch.fx.graph.map_arg(a, lambda n: env[n.name])
 
         def fetch_attr(target : str):
+            """
+            This function fetches an attribute from a given target string by
+            iterating through the dot-separated components of the target and
+            retrieving the attribute from each component's object using getattr().
+            If any component is non-existent. it raises a RuntimeError. The last
+            component's attribute value is returned.
+
+            Args:
+                target (str): The target input parameter is the name of an attribute
+                    to retrieve within a module using dotted notation (e.g., '
+                    Foo.bar'). The function breaks apart the given target into its
+                    atoms and iterates through the attributes within each atom
+                    using the object's module until it successfully retrieves the
+                    desired attribute value. In simpler words : target parameter
+                    is a string that we are going to look up
+
+            Returns:
+                : The output returned by this function is nonexistent node. Because
+                if any of the target nodes do not exist then it raises a RuntimeError
+                exception.
+
+            """
             target_atoms = target.split('.')
             attr_itr = self.mod
             for i, atom in enumerate(target_atoms):
