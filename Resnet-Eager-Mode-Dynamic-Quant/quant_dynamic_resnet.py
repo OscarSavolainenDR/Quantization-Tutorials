@@ -2,6 +2,9 @@ import torch
 from model.resnet import resnet18
 
 from evaluate import evaluate
+from ipdb_hook import ipdb_sys_excepthook
+
+ipdb_sys_excepthook()
 
 model = resnet18(pretrained=True)
 print(model)
@@ -33,7 +36,22 @@ fused_model.train()
 fake_quant_model = torch.ao.quantization.prepare_qat(fused_model)
 
 # Step 4b: Try dynamic quantization
-fake_quant_model_dynamic = torch.quantization.quantize_dynamic(model)
+# NOTE: we overrride the default mapping to have some more examples
+from torch.ao.quantization.quantization_mappings import get_default_dynamic_quant_module_mappings
+from torch.ao.quantization.qconfig import default_dynamic_qconfig
+import torch.ao.nn.quantized.dynamic as nnqd
+mapping = get_default_dynamic_quant_module_mappings()
+mapping[torch.nn.Conv2d] = nnqd.Conv2d
+qconfig_spec = {
+                torch.nn.Linear : default_dynamic_qconfig,
+                torch.nn.LSTM : default_dynamic_qconfig,
+                torch.nn.GRU : default_dynamic_qconfig,
+                torch.nn.LSTMCell : default_dynamic_qconfig,
+                torch.nn.RNNCell : default_dynamic_qconfig,
+                torch.nn.GRUCell : default_dynamic_qconfig,
+                torch.nn.Conv2d: default_dynamic_qconfig, # has bad numerical performance
+            }
+fake_quant_model_dynamic = torch.quantization.quantize_dynamic(model, qconfig_spec=qconfig_spec, mapping=mapping)
 
 # Evaluate
 print('\noriginal')
@@ -56,7 +74,7 @@ evaluate(fake_quant_model, 'cpu')
 print('\nconverted')
 evaluate(converted_model, 'cpu')
 
-
+xxx
 # ## Torch compile
 # compiled_model = torch.compile(model)
 # print(compiled_model)
