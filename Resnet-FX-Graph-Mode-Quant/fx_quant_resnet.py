@@ -191,5 +191,6 @@ def store_shape_dtype(node, result):
 GraphIteratorStorage(fx_model, store_shape_dtype).propagate(example_inputs[0])
 for node in fx_model.graph.nodes:
     print(node.name, node.shape, node.dtype)
+
 xxx
 
