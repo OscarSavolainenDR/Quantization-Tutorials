@@ -85,7 +85,7 @@ class BasicBlock(nn.Module):
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
-        self.add_relu = torch.ao.nn.quantized.FloatFunctional()
+        self.add_relu_FF = torch.ao.nn.quantized.FloatFunctional()
 
     def modules_to_fuse(self, prefix):
         modules_to_fuse_ = []
@@ -109,7 +109,7 @@ class BasicBlock(nn.Module):
         if self.downsample is not None:
             identity = self.downsample(x)
 
-        out = self.add_relu.add_relu(out, identity)
+        out = self.add_relu_FF.add_relu(out, identity)
 
         return out
 

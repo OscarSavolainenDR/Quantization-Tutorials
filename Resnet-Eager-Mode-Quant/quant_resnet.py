@@ -70,5 +70,6 @@ converted_model = torch.ao.quantization.convert(fake_quant_model)
 
 print("\nConverted model")
 evaluate(converted_model, 'cpu')
+
 import ipdb
 ipdb.set_trace()
