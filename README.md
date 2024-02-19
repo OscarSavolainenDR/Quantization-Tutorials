@@ -9,6 +9,12 @@ This is the first coding tutorial. We take the `torchvision` `ResNet` model and 
 
 We discuss common issues one can run into, as well as some interesting but tricky bugs.
 
+# Resnet-Eager-Mode-Dynamic-Quant:
+
+**TODO**
+
+In this tutorial, we do dynamicn quantization on a ResNet model. We look at how dynamic quantization works, what the default settings are in PyTorch, and discuss how it differs to static quantization.
+
 # Resnet-FX-Graph-Mode-Quant:
 
 **TODO** 
