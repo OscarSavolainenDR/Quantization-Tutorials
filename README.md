@@ -13,7 +13,7 @@ We discuss common issues one can run into, as well as some interesting but trick
 
 **TODO**
 
-In this tutorial, we do dynamicn quantization on a ResNet model. We look at how dynamic quantization works, what the default settings are in PyTorch, and discuss how it differs to static quantization.
+In this tutorial, we do dynamic quantization on a ResNet model. We look at how dynamic quantization works, what the default settings are in PyTorch, and discuss how it differs to static quantization.
 
 # Resnet-FX-Graph-Mode-Quant:
 
