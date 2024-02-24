@@ -1,3 +1,4 @@
+from typing import Tuple, Any, Union
 import torch
 import torch.quantization as tq
 import torch.ao.quantization as taq
@@ -187,36 +188,104 @@ GraphIteratorStorage(fx_model, store_shape_dtype).propagate(example_inputs[0])
 for node in fx_model.graph.nodes:
     print(node.name, node.shape, node.dtype)
 
+###########################################
+### Fusing Bn in ConvBnReLU into ConvReLU #
+###########################################
+import copy
+from torch.ao.nn.intrinsic.qat.modules.conv_fused import ConvBnReLU2d, ConvReLU2d, ConvBn2d
+from torch.ao.nn.qat import Conv2d
 
 
-from torch.fx.node import Argument
-from typing import Any, Dict, Tuple
-from torch.fx import Transformer
-class ConvBNReLUToConvReLU(Transformer):
-    def call_function(self, target : 'Target', args : Tuple[Argument, ...], kwargs : Dict[str, Any]) -> Any:
-        if target == torch.sigmoid:
-            return torch.neg(*args, **kwargs)
-        return super().call_function(n)
 
-    def call_method(self, target : 'Target', args : Tuple[Argument, ...], kwargs : Dict[str, Any]) -> Any:
-        if target == 'neg':
-            call_self, *args_tail = args
-            return call_self.sigmoid(*args_tail, **kwargs)
-        return super().call_method(n)
+def fuse_conv_bn_relu_eval(conv: Union[ConvBnReLU2d, ConvBn2d]) -> Union[ConvReLU2d, Conv2d]:
+    # NOTE: generalise to ConvBN -> COnv too
+    """
+    Given a quantizable ConvBnReLU2d Module returns a quantizable ConvReLU2d
+    module such that the BatchNorm has been fused into the Conv, in inference mode.
+    Given a ConvBn2d, it does the same to produce a Conv2d.
+    """
+    assert(not (conv.training or conv.bn.training)), "Fusion only for eval!"
+    qconfig = conv.qconfig
+    if type(conv) is ConvBnReLU2d:
+        new_conv = ConvReLU2d(conv.in_channels, conv.out_channels, conv.kernel_size,
+                            conv.stride, conv.padding, conv.dilation,
+                            conv.groups, conv.bias is not None,
+                            conv.padding_mode, qconfig=qconfig)
+    elif type(conv) is ConvBn2d:
+        new_conv = Conv2d(conv.in_channels, conv.out_channels, conv.kernel_size,
+                            conv.stride, conv.padding, conv.dilation,
+                            conv.groups, conv.bias is not None,
+                            conv.padding_mode, qconfig=qconfig)
+
+
+    new_conv.weight, new_conv.bias = \
+        fuse_conv_bn_weights(conv.weight, conv.bias,
+                             conv.bn.running_mean, conv.bn.running_var, conv.bn.eps, conv.bn.weight, conv.bn.bias)
+
+    return new_conv
+
+def fuse_conv_bn_weights(conv_w, conv_b, bn_rm, bn_rv, bn_eps, bn_w, bn_b):
+    """
+    Helper function for fusing a Conv and BatchNorm into a single weight/bias tensor pair.
+    """
+    if conv_b is None:
+        conv_b = torch.zeros_like(bn_rm)
+    if bn_w is None:
+        bn_w = torch.ones_like(bn_rm)
+    if bn_b is None:
+        bn_b = torch.zeros_like(bn_rm)
+    bn_var_rsqrt = torch.rsqrt(bn_rv + bn_eps)
+
+    conv_w = conv_w * (bn_w * bn_var_rsqrt).reshape([-1] + [1] * (len(conv_w.shape) - 1))
+    conv_b = (conv_b - bn_rm) * bn_var_rsqrt * bn_w + bn_b
+
+    return torch.nn.Parameter(conv_w), torch.nn.Parameter(conv_b)
+
+# Graph manipulation functions for fusing Convs and BatchNorms
+def _parent_name(target : str) -> Tuple[str, str]:
+    """
+    Splits a qualname into parent path and last atom.
+    For example, `foo.bar.baz` -> (`foo.bar`, `baz`)
+    """
+    *parent, name = target.rsplit('.', 1)
+    return parent[0] if parent else '', name
+
+def replace_node_module(node: fx.Node, modules: Dict[str, Any], new_module: torch.nn.Module):
+    """
+    Helper function for having ` new_mdoule` take the place of `node`  in a dict of modules.
+    """
+    assert(isinstance(node.target, str))
+    parent_name, name = _parent_name(node.target)
+    modules[node.target] = new_module
+    setattr(modules[parent_name], name, new_module)
     
-    def call_module(self, target: 'Target', args : Tuple[Argument, ...], kwargs : Dict[str, Any]) -> Any:
-        if 'conv' in target:
-            orig = self.module.get_submodule(target)
-            if type(orig) in [torch.ao.nn.intrinsic.qat.modules.conv_fused.ConvBnReLU2d]:
-                call_module, *args_tail = args
-                xxx
-                # return new operation fed into call_module
-        return super().call_module(target=target, args=args, kwargs=kwargs)
+def convbnrelu_to_convrelu(fx_model: torch.fx.GraphModule) -> torch.fx.GraphModule:
+    """
+    Iterates through the graph nodes, and:
+    - where it finds a ConvBnReLU it replaces it with ConvReLU
+    - where it finds a ConvBn it replaces it with Conv
+    """
+    modules = dict(fx_model.named_modules())
+    new_graph = copy.deepcopy(fx_model.graph)
+
+    for node in new_graph.nodes:
+        if node.op == 'call_module':
+            # The target attribute is the function
+            # that call_function calls.
+            orig = fx_model.get_submodule(node.target)
+            if type(orig) in [ConvBnReLU2d, ConvBn2d]:
+                fused_conv = fuse_conv_bn_relu_eval(orig)
+                replace_node_module(node, modules, fused_conv)
+    
+    return fx.GraphModule(fx_model, new_graph)
 
 
-#gm = torch.fx.symbolic_trace(model)
-
-transformed : torch.nn.Module = ConvBNReLUToConvReLU(fx_model).transform()
+deep = copy.deepcopy(fx_model)
+deep.eval()
+transformed : torch.fx.GraphModule = convbnrelu_to_convrelu(fx_model)
 input = example_inputs[0]
 out = transformed(input)
+out2 = deep(input)
+print('\nTransformed model')
+evaluate(transformed, 'cpu')
 XXX
