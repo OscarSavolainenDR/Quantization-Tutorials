@@ -112,12 +112,48 @@ class GraphIteratorStorage:
     its respective `Node`, for the given input to `propagate`.
     """
     def __init__(self, mod, storage):
+        """
+        This function initalizes an object of a class by setting its instance
+        variables (member variables) to values from the parameter passed to the
+        constructor. These include "self.mod" (which appears to be an object
+        representing a module), "self.graph" and "self.storage", and a dictionary
+        of modules named within that module ("self.modules").
+
+        Args:
+            mod (): The `mod` input parameter is passed by the user to the `__init__`
+                method of the `MetaModel` class; it refers to a Modulen Object.
+                In this context "module" denotes an object encapsulating code
+                associated with particular Python modules or packages; for example:
+                numpy. Num is the name of one such module.  The mod argument to
+                the `init` method stores references both to a given package's /
+                modules' underlying `graph`, (a structure of objects), and
+                `named_modules` attribute which yields its constituent modules as
+                a dictionary for future fast access; thus enabling convenient
+                referencing of code regions within it when creating/querying
+                metadata about its subcomponents and connections during computation
+            storage (dict): The storage parameter stores a dictionary of Python
+                module objects representing Python modules that have been imported
+                at the time the cache was built and saved for future access to
+                prevent further reimporting.
+
+        """
         self.mod = mod
         self.graph = mod.graph
         self.modules = dict(self.mod.named_modules())
         self.storage = storage
 
     def propagate(self, *args):
+        """
+        This function takes a PyTorch FX graph object as input and executes it
+        with a generic module interpreter. It recursively walks through the graph
+        nodes and performs the following operations:
+        1/ Maps arguments to their corresponding node's input_tensors.
+        2/ Retrieves an attribute from a target node.
+        3/ Calls a function/method with argument wrapping.
+        4/ Stores output activations of each node to an env dictionary for later
+        retrieval.
+
+        """
         args_iter = iter(args)
         env : Dict[str, Node] = {}
 
@@ -125,6 +161,29 @@ class GraphIteratorStorage:
             return torch.fx.graph.map_arg(a, lambda n: env[n.name])
 
         def fetch_attr(target : str):
+            """
+            This function fetches an attribute from a given target string by
+            splitting it into a list of atoms (segments), checking if each segment
+            is a valid attribute of the current object using "hasattr()", and
+            returning the value of the final attributed object.
+
+            Args:
+                target (str): The `target` parameter is a string that specifies
+                    which attribute to fetch. The function splits the string into
+                    a list of atoms (i.e., elements) using the dot character `.`
+                    as the separator. It then iterates over these atoms and uses
+                    each one as a keyword to access attributes on an object `attr_itr`.
+
+            Returns:
+                : The output of this function would be None if it encounters a
+                runtime error because one or more referenced target atoms don't
+                exist.  The fetch_attr function will throw a RuntimeError whenever
+                the reference targets an undefined object property (the atom portion
+                of the splited string does not exist), with error messages provided
+                where applicable (including parts of the string prior to failing
+                components)
+
+            """
             target_atoms = target.split('.')
             attr_itr = self.mod
             for i, atom in enumerate(target_atoms):
