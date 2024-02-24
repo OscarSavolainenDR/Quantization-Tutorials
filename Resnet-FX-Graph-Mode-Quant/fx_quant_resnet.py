@@ -14,16 +14,10 @@ from model.resnet import resnet18
 
 ipdb_sys_excepthook()
 
+# Intialize model
 model = resnet18(pretrained=True)
 
-# from torch.ao.quantization import get_default_qconfig_mapping
-# qconfig_mapping = get_default_qconfig_mapping("fbgemm")
-
-#qconfig_layer = tq.QConfig(
-    #activation=learnable_act(range=2),
-    #weight=learnable_weights
-#)
-
+# Define qconfigs
 qconfig_FF = tq.QConfig(
     activation=learnable_act(range=2),
     weight=tq.default_fused_per_channel_wt_fake_quant
@@ -35,6 +29,7 @@ qconfig_QS_DQ = tq.QConfig(
 )
 
 
+# Assign qconfigs
 qconfig_mapping = QConfigMapping().set_object_type((taq.QuantStub, taq.DeQuantStub), qconfig_QS_DQ) \
                                 .set_object_type(nnq.FloatFunctional, qconfig_FF)
 
@@ -46,16 +41,16 @@ for name, module in model.named_modules():
             weight=learnable_weights(channels=module.out_channels)
         )
         qconfig_mapping.set_module_name(name, qconfig)
-        module.qconfig = qconfig
+        #module.qconfig = qconfig
 
 
 example_inputs = (torch.randn(1, 3, 224, 224),)
 
 model.eval()
+#import ipdb
+#ipdb.set_trace()
+# NOTE: check how the modules get fused, I want ConvReLU not ConvBNReLU
 fx_model = prepare_qat_fx(model, qconfig_mapping, example_inputs)
-
-model.train()
-fake_quant_model = tq.prepare_qat(model, inplace=False)
 
 # NOTE: need to figure out how to place the fixed qparams qconfig correctly
 # at beginning and end. Also, mention that PTQ is on in both cases, so we are cheating
@@ -69,8 +64,6 @@ evaluate(model, 'cpu')
 print('\n FX prepared')
 evaluate(fx_model, 'cpu')
 
-print('\n Eager mode prepared')
-evaluate(fake_quant_model, 'cpu')
 # Can experiment with visualize the graph, e.g.
 # >> fx_model
 # >> print(fx_model.graph)  # prints the DAG
@@ -122,7 +115,7 @@ class GraphIteratorStorage:
     node-by-node with the given arguments, e.g. an example input tensor.
     As each operation executes, the GraphIteratorStorage class stores
     away the result of the callable for the output values of each operation on
-    the attributes of the operation's `Node`. For exmaple,
+    the attributes of the operation's `Node`. For example,
     one could use a callable `store_shaped_dtype()` where:
 
     ```
@@ -175,7 +168,9 @@ class GraphIteratorStorage:
             # a generic GraphModule interpreter
             self.storage(node, result)
 
+            # Store the output activation in `env` for the given node
             env[node.name] = result
+
         #return load_arg(self.graph.result)
 
 def store_shape_dtype(node, result):
@@ -192,5 +187,36 @@ GraphIteratorStorage(fx_model, store_shape_dtype).propagate(example_inputs[0])
 for node in fx_model.graph.nodes:
     print(node.name, node.shape, node.dtype)
 
-xxx
 
+
+from torch.fx.node import Argument
+from typing import Any, Dict, Tuple
+from torch.fx import Transformer
+class ConvBNReLUToConvReLU(Transformer):
+    def call_function(self, target : 'Target', args : Tuple[Argument, ...], kwargs : Dict[str, Any]) -> Any:
+        if target == torch.sigmoid:
+            return torch.neg(*args, **kwargs)
+        return super().call_function(n)
+
+    def call_method(self, target : 'Target', args : Tuple[Argument, ...], kwargs : Dict[str, Any]) -> Any:
+        if target == 'neg':
+            call_self, *args_tail = args
+            return call_self.sigmoid(*args_tail, **kwargs)
+        return super().call_method(n)
+    
+    def call_module(self, target: 'Target', args : Tuple[Argument, ...], kwargs : Dict[str, Any]) -> Any:
+        if 'conv' in target:
+            orig = self.module.get_submodule(target)
+            if type(orig) in [torch.ao.nn.intrinsic.qat.modules.conv_fused.ConvBnReLU2d]:
+                call_module, *args_tail = args
+                xxx
+                # return new operation fed into call_module
+        return super().call_module(target=target, args=args, kwargs=kwargs)
+
+
+#gm = torch.fx.symbolic_trace(model)
+
+transformed : torch.nn.Module = ConvBNReLUToConvReLU(fx_model).transform()
+input = example_inputs[0]
+out = transformed(input)
+XXX
