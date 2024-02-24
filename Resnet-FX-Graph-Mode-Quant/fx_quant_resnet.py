@@ -176,7 +176,6 @@ for node in fx_model.graph.nodes:
 ###########################################
 ### Fusing Bn in ConvBnReLU into ConvReLU #
 ###########################################
-import copy
 from torch.ao.nn.intrinsic.qat.modules.conv_fused import ConvBnReLU2d, ConvReLU2d, ConvBn2d
 from torch.ao.nn.qat import Conv2d
 
@@ -247,6 +246,8 @@ def convbnrelu_to_convrelu(fx_model: torch.fx.GraphModule) -> torch.fx.GraphModu
     - where it finds a ConvBnReLU it replaces it with ConvReLU
     - where it finds a ConvBn it replaces it with Conv
 
+    This function works in-place on `fx_model`.
+
     Inputs:
     fx_model (torch.fx.GraphModule): a graph module, that we want to perform transformations on
 
@@ -255,9 +256,8 @@ def convbnrelu_to_convrelu(fx_model: torch.fx.GraphModule) -> torch.fx.GraphModu
                             fused the Bns into the Convs.
     """
     modules = dict(fx_model.named_modules())
-    new_graph = copy.deepcopy(fx_model.graph)
 
-    for node in new_graph.nodes:
+    for node in fx_model.graph.nodes:
         # If the operation the node is doing is to call a module
         if node.op == 'call_module':
             # The current node
@@ -268,8 +268,7 @@ def convbnrelu_to_convrelu(fx_model: torch.fx.GraphModule) -> torch.fx.GraphModu
                 # This updates `modules` so that `fused_conv`` takes the place of what was represented by `node`
                 replace_node_module(node, modules, fused_conv)
     
-    return fx.GraphModule(fx_model, new_graph)
-
+    return fx_model
 
 transformed : torch.fx.GraphModule = convbnrelu_to_convrelu(fx_model)
 input = example_inputs[0]

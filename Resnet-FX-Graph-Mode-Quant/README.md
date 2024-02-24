@@ -42,7 +42,7 @@ cd Resnet-FX-Graph-Mode-Quant
 ```
 Then, just run `python fx_quant_resnet.py` from your command line! However I would obviously recommend that you follow along with the tutorial, so that you learn how it all works and get your hands dirty.
 
-If you want to compare the process to eager mode, just run  `python eager_quant_resnet.py`. For the tutorial on eager mode (which includes making architecture changes to the publicly available Resenet model to make it quantizable), cd into `your-folder/Resnet-Eager-Mode-Quant` and see the `README.md` there.
+For the tutorial on eager mode (which includes making architecture changes to the publicly available Resenet model to make it quantizable), cd into `your-folder/Resnet-Eager-Mode-Quant` and see the `README.md` there.
 
 
 Let me know if there are any issues!

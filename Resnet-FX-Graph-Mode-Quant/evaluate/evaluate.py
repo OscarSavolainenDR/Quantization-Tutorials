@@ -1,9 +1,10 @@
+from pathlib import Path
 import torch
 
 def evaluate(model, device_str: str):
     # Download an example image from the pytorch website
     import urllib
-    url, filename = ("https://github.com/pytorch/hub/raw/master/images/dog.jpg", "dog.jpg")
+    url, filename = ("https://github.com/pytorch/hub/raw/master/images/dog.jpg", Path("evaluate/dog.jpg"))
     try: urllib.URLopener().retrieve(url, filename)
     except: urllib.request.urlretrieve(url, filename)
     # sample execution (requires torchvision)
@@ -39,7 +40,7 @@ def evaluate(model, device_str: str):
     # print(probabilities)
 
     # Read the categories
-    with open("imagenet_classes.txt", "r") as f:
+    with open(Path("evaluate/imagenet_classes.txt"), "r") as f:
         categories = [s.strip() for s in f.readlines()]
     # Show top categories per image
     top5_prob, top5_catid = torch.topk(probabilities, 5)
