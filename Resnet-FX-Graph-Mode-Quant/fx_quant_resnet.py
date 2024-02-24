@@ -13,6 +13,7 @@ from ipdb_hook import ipdb_sys_excepthook
 
 from model.resnet import resnet18
 
+# Adds ipdb breakpoint if and where we have an error
 ipdb_sys_excepthook()
 
 # Intialize model
@@ -42,7 +43,6 @@ for name, module in model.named_modules():
             weight=learnable_weights(channels=module.out_channels)
         )
         qconfig_mapping.set_module_name(name, qconfig)
-        #module.qconfig = qconfig
 
 
 example_inputs = (torch.randn(1, 3, 224, 224),)
@@ -80,27 +80,10 @@ fx_model.graph.print_tabular()
 #with open("graph.svg", "wb") as f:
     #f.write(g.get_dot_graph().create_svg())
 
-# We will correct the graph to have fixedqparams on the input quantstub
-# NOTE: taken from https://pytorch.org/docs/stable/fx.html#graph-manipulation
-def transform(m: torch.nn.Module,
-              tracer_class : type = fx.Tracer) -> torch.nn.Module:
-    graph : fx.Graph = tracer_class().trace(m)
-    # FX represents its Graph as an ordered list of
-    # nodes, so we can iterate through them.
-    for node in graph.nodes:
-        # Checks if we're calling a function (i.e:
-        # torch.add)
-        if node.op == 'call_function':
-            # The target attribute is the function
-            # that call_function calls.
-            if node.target == torch.add:
-                node.target = torch.mul
 
-    graph.lint() # Does some checks to make sure the
-                 # Graph is well-formed.
-
-    return fx.GraphModule(m, graph)
-
+#########################
+# SOME GRAPH TECHNIQUES #
+#########################
 # Experiment with iterator pattern:
 # NOTE: taken from https://pytorch.org/docs/stable/fx.html#the-interpreter-pattern
 from torch.fx.node import Node
@@ -188,6 +171,8 @@ GraphIteratorStorage(fx_model, store_shape_dtype).propagate(example_inputs[0])
 for node in fx_model.graph.nodes:
     print(node.name, node.shape, node.dtype)
 
+
+
 ###########################################
 ### Fusing Bn in ConvBnReLU into ConvReLU #
 ###########################################
@@ -195,10 +180,7 @@ import copy
 from torch.ao.nn.intrinsic.qat.modules.conv_fused import ConvBnReLU2d, ConvReLU2d, ConvBn2d
 from torch.ao.nn.qat import Conv2d
 
-
-
 def fuse_conv_bn_relu_eval(conv: Union[ConvBnReLU2d, ConvBn2d]) -> Union[ConvReLU2d, Conv2d]:
-    # NOTE: generalise to ConvBN -> COnv too
     """
     Given a quantizable ConvBnReLU2d Module returns a quantizable ConvReLU2d
     module such that the BatchNorm has been fused into the Conv, in inference mode.
@@ -264,28 +246,34 @@ def convbnrelu_to_convrelu(fx_model: torch.fx.GraphModule) -> torch.fx.GraphModu
     Iterates through the graph nodes, and:
     - where it finds a ConvBnReLU it replaces it with ConvReLU
     - where it finds a ConvBn it replaces it with Conv
+
+    Inputs:
+    fx_model (torch.fx.GraphModule): a graph module, that we want to perform transformations on
+
+    Output:
+    (torch.fx.GraphModule): a model where we have swapped out the 2d ConvBn/ConvBnReLU for Conv/ConvReLU, and
+                            fused the Bns into the Convs.
     """
     modules = dict(fx_model.named_modules())
     new_graph = copy.deepcopy(fx_model.graph)
 
     for node in new_graph.nodes:
+        # If the operation the node is doing is to call a module
         if node.op == 'call_module':
-            # The target attribute is the function
-            # that call_function calls.
+            # The current node
             orig = fx_model.get_submodule(node.target)
             if type(orig) in [ConvBnReLU2d, ConvBn2d]:
+                # Produce a fused Bn equivalent.
                 fused_conv = fuse_conv_bn_relu_eval(orig)
+                # This updates `modules` so that `fused_conv`` takes the place of what was represented by `node`
                 replace_node_module(node, modules, fused_conv)
     
     return fx.GraphModule(fx_model, new_graph)
 
 
-deep = copy.deepcopy(fx_model)
-deep.eval()
 transformed : torch.fx.GraphModule = convbnrelu_to_convrelu(fx_model)
 input = example_inputs[0]
-out = transformed(input)
-out2 = deep(input)
+out = transformed(input) # Test we cna feed something through the model
 print('\nTransformed model')
 evaluate(transformed, 'cpu')
 XXX
