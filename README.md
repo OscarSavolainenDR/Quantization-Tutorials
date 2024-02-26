@@ -3,8 +3,7 @@ A bunch of coding tutorials for my [Youtube videos on Neural Network Quantizatio
 
 # Resnet-Eager-Mode-Quant:
 
-[![How to Quantize a ResNet from Scratch! Full Coding Tutorial (Eager Mode)](https://ytcards.demolab.com/?id=jNZ1rkIfwsM&title=How+to+Quantize+a+ResNet+from+Scratch!+Full+Coding+Tutorial+(Eager+Mode)&lang=en&timestamp=1706473016&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "How to Quantize a ResNet from Scratch! Full Coding Tutorial (Eager Mode)")](https://www.youtube.com/watch?v=jNZ1rkIfwsM)
-
+[![How to Quantize a ResNet from Scratch! Full Coding Tutorial (Eager Mode)](https://ytcards.demolab.com/?id=jNZ1rkIfwsM&title=How+to+Quantize+a+ResNet+from+Scratch%21+Full+Coding+Tutorial+%28Eager+Mode%29%0D%0A&lang=en&timestamp=1706473016&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "How to Quantize a ResNet from Scratch! Full Coding Tutorial (Eager Mode)")](https://www.youtube.com/watch?v=jNZ1rkIfwsM)
 
 This is the first coding tutorial. We take the `torchvision` `ResNet` model and quantize it entirely from scratch with the PyTorch quantization library, using Eager Mode Quantization.
 
