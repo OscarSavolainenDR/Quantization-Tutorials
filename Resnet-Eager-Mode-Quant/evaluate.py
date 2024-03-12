@@ -3,6 +3,19 @@ import torch
 def evaluate(model, device_str='cuda'):
 
     # Download an example image from the pytorch website
+    """
+    This is a functional piece of code that downloads an image from a predefined
+    URL and processes it through a model and then generates a probability distribution
+    over ImageNet classes using the softmax activation.
+
+    Args:
+        model (): The input parameter `model` to `evaluate()` is a PyTorch model
+            whose inputs are to be passed through it for prediction and evaluation.
+        device_str (str): The `device_str` input parameter specifies whether to
+            move the input and model to GPU or CPU after preprocessing and before
+            executing the model.
+
+    """
     import urllib
     url, filename = ("https://github.com/pytorch/hub/raw/master/images/dog.jpg", "dog.jpg")
     try: urllib.URLopener().retrieve(url, filename)
