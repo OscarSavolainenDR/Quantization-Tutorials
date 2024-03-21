@@ -1,4 +1,6 @@
 from typing import Tuple, Any, Union
+from copy import deepcopy
+
 import torch
 import torch.quantization as tq
 import torch.ao.quantization as taq
@@ -133,6 +135,7 @@ class GraphIteratorStorage:
                 attr_itr = getattr(attr_itr, atom)
             return attr_itr
 
+        # Each of these `result` variables correpsonds to the output of the node in question
         for node in self.graph.nodes:
             if node.op == 'placeholder':
                 result = next(args_iter)
@@ -168,6 +171,8 @@ def store_shape_dtype(node, result):
 # NOTE: I just discovered that they have the `Interpreter` class, which accomplishes the same thing:
 # https://pytorch.org/docs/stable/fx.html#torch.fx.Interpreter
 GraphIteratorStorage(fx_model, store_shape_dtype).propagate(example_inputs[0])
+
+print("\nPrinting size and data types:")
 for node in fx_model.graph.nodes:
     print(node.name, node.shape, node.dtype)
 
@@ -184,6 +189,7 @@ def fuse_conv_bn_relu_eval(conv: Union[ConvBnReLU2d, ConvBn2d]) -> Union[ConvReL
     Given a quantizable ConvBnReLU2d Module returns a quantizable ConvReLU2d
     module such that the BatchNorm has been fused into the Conv, in inference mode.
     Given a ConvBn2d, it does the same to produce a Conv2d.
+    One could also use `torch.nn.utils.fuse_conv_bn_eval` to produce a Conv, and then quantize that as desired.
     """
     assert(not (conv.training or conv.bn.training)), "Fusion only for eval!"
     qconfig = conv.qconfig
@@ -226,21 +232,21 @@ def fuse_conv_bn_weights(conv_w, conv_b, bn_rm, bn_rv, bn_eps, bn_w, bn_b):
 def _parent_name(target : str) -> Tuple[str, str]:
     """
     Splits a qualname into parent path and last atom.
-    For example, `foo.bar.baz` -> (`foo.bar`, `baz`)
+    For example, `foo.bar.baz` -> (`foo.bar`, `baz`) 
     """
     *parent, name = target.rsplit('.', 1)
     return parent[0] if parent else '', name
 
 def replace_node_module(node: fx.Node, modules: Dict[str, Any], new_module: torch.nn.Module):
     """
-    Helper function for having ` new_mdoule` take the place of `node`  in a dict of modules.
+    Helper function for having `new_module` take the place of `node` in a dict of modules.
     """
     assert(isinstance(node.target, str))
     parent_name, name = _parent_name(node.target)
     modules[node.target] = new_module
     setattr(modules[parent_name], name, new_module)
     
-def convbnrelu_to_convrelu(fx_model: torch.fx.GraphModule) -> torch.fx.GraphModule:
+def convbn_to_conv(fx_model: torch.fx.GraphModule) -> torch.fx.GraphModule:
     """
     Iterates through the graph nodes, and:
     - where it finds a ConvBnReLU it replaces it with ConvReLU
@@ -265,14 +271,14 @@ def convbnrelu_to_convrelu(fx_model: torch.fx.GraphModule) -> torch.fx.GraphModu
             if type(orig) in [ConvBnReLU2d, ConvBn2d]:
                 # Produce a fused Bn equivalent.
                 fused_conv = fuse_conv_bn_relu_eval(orig)
-                # This updates `modules` so that `fused_conv`` takes the place of what was represented by `node`
+                # This updates `modules` so that `fused_conv` takes the place of what was represented by `node`
                 replace_node_module(node, modules, fused_conv)
     
     return fx_model
 
-transformed : torch.fx.GraphModule = convbnrelu_to_convrelu(fx_model)
+transformed : torch.fx.GraphModule = convbn_to_conv(deepcopy(fx_model))
 input = example_inputs[0]
-out = transformed(input) # Test we cna feed something through the model
+out = transformed(input) # Test we can feed something through the model
 print('\nTransformed model')
 evaluate(transformed, 'cpu')
 XXX
