@@ -1,6 +1,6 @@
 import torch
 import torch.quantization as tq
-from torch.ao.quantization.fake_quantize import FixedQParamsFakeQuantize
+from torch.ao.quantization.fake_quantize import FakeQuantize
 from torch.ao.quantization._learnable_fake_quantize import (
     _LearnableFakeQuantize as LearnableFakeQuantize,
 )
@@ -28,10 +28,8 @@ learnable_weights = lambda channels : LearnableFakeQuantize.with_args(  # need t
     channel_len=channels,
 )
 
-fixed_act = lambda min , max : FixedQParamsFakeQuantize.with_args(
-    observer=torch.ao.quantization.observer.FixedQParamsObserver.with_args(
-        scale=(max - min) / 255.0,
-        zero_point=-min / ((max - min) / 255.0),  #  zero_point = -min / scale
+fake_quant_act =  FakeQuantize.with_args(
+    observer=tq.HistogramObserver.with_args(
         quant_min=0,
         quant_max=255,
         dtype=torch.quint8,
