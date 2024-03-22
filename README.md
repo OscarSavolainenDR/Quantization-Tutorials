@@ -18,15 +18,7 @@ In this tutorial, we do dynamic quantization on a ResNet model. We look at how d
 
 # How to do FX Graph Mode Quantization (PyTorch ResNet Coding tutorial)
 
-In this tutorial, we use Torch's FX Graph mode quantization to quantize a ResNet. We look at the Directed Acyclic Graph (DAG), at how the fusing, placement of quantstubs and FloatFunctionals all happen automatically, and compare it to Eager mode, e.g. how the location of the requantization stpe will now be different.
-
-[![How to do FX Graph Mode Quantization (PyTorch ResNet Coding tutorial)](https://ytcards.demolab.com/?id=AHw5BOUfLU4&title=How+to+do+FX+Graph+Mode+Quantization+(PyTorch+ResNet+Coding+tutorial)&lang=en&timestamp=1706473016&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "How to do FX Graph Mode Quantization (PyTorch ResNet Coding tutorial)")](https://www.youtube.com/watch?v=AHw5BOUfLU4)
-
-
-# Resnet-FX-Graph-Mode-2
-
-**TODO**
-
-In this tutorial, we'll build in our work on FX Graph Mode and 
-start doing some graph manipulation. We'll replace the input Quantstub with something custom,
-fuse Convs and BatchNorm together into a static module, look at some neat graph-based alternatives to hooks, and gain familiarity with navigating and manipulating the graph.
+In this tutorial series, we use Torch's FX Graph mode quantization to quantize a ResNet. In the first video, we look at the Directed Acyclic Graph (DAG), and see how the fusing, placement of quantstubs and FloatFunctionals all happen automatically. In the second, we look at some of the intricacies of how quantization interacts with the GraphModule. In the third and final video, we look at some more advanced techniques for manipulating and traversing the graph, and use these to discover an alternative to forward hooks and fuse BatchNorm layers into their preceding Convs.
+[![How to do FX Graph Mode Quantization: FX Graph Mode Quantization Coding tutorial - Part 1/3](https://ytcards.demolab.com/?id=AHw5BOUfLU4&title=How+to+do+FX+Graph+Mode+Quantization%3A+FX+Graph+Mode+Quantization+Coding+tutorial+-+Part+1%2F3&lang=en&timestamp=1710264531&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "How to do FX Graph Mode Quantization: FX Graph Mode Quantization Coding tutorial - Part 1/3")](https://www.youtube.com/watch?v=AHw5BOUfLU4)
+[![How does Graph Mode Affect Quantization? FX Graph Mode Quantization Coding tutorial - Part 2/3](https://ytcards.demolab.com/?id=1S3jlGdGdjM&title=How+does+Graph+Mode+Affect+Quantization%3F+FX+Graph+Mode+Quantization+Coding+tutorial+-+Part+2%2F3&lang=en&timestamp=1710452876&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "How does Graph Mode Affect Quantization? FX Graph Mode Quantization Coding tutorial - Part 2/3")](https://www.youtube.com/watch?v=1S3jlGdGdjM)
+[![Advanced PyTorch Graph Manipulation: FX Graph Mode Quantization Coding tutorial - Part 3/3](https://ytcards.demolab.com/?id=azpsgB8y0A8&title=Advanced+PyTorch+Graph+Manipulation%3A+FX+Graph+Mode+Quantization+Coding+tutorial+-+Part+3%2F3&lang=en&timestamp=1711116192&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "Advanced PyTorch Graph Manipulation: FX Graph Mode Quantization Coding tutorial - Part 3/3")](https://www.youtube.com/watch?v=azpsgB8y0A8)
