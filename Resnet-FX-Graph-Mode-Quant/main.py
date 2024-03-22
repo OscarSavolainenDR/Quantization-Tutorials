@@ -97,12 +97,46 @@ class GraphIteratorStorage:
     its respective `Node`, for the given input to `propagate`.
     """
     def __init__(self, mod, storage):
+        """
+        initializes an instance of a class, assigning values to its properties
+        from arguments passed in the constructor.
+
+        Args:
+            mod (module instance.): Python module that contains the code for which
+                high-quality documentation is being generated.
+                
+                	1/ `mod`: A `Module` object that holds information about the model
+                architecture.
+                	2/ `graph`: The graph structure representing the model's architecture.
+                	3/ `modules`: A dictionary containing named modules within the
+                model architecture.
+                	4/ `storage`: A storage container holding any additional data or
+                settings associated with the model.
+                
+            storage (`storage`.): data storage location for the graphical user
+                interface, which is used to store the module's state information
+                and other relevant data.
+                
+                	1/ Modules: `storage.modules` is a dictionary that stores all the
+                modules that are loaded into the modular system. It has the keys
+                as module names and the values as the modules themselves.
+                	2/ Graph: `self.graph` refers to the graph structure of the modular
+                system, which connects modules through their dependencies.
+                
+
+        """
         self.mod = mod
         self.graph = mod.graph
         self.modules = dict(self.mod.named_modules())
         self.storage = storage
 
     def propagate(self, *args):
+        """
+        takes a GraphModule instance as input and recursively applies its nodes'
+        operations to their arguments, storing the output activation in an environment
+        dictionary for later use.
+
+        """
         args_iter = iter(args)
         env : Dict[str, Node] = {}
 
@@ -110,6 +144,30 @@ class GraphIteratorStorage:
             return torch.fx.graph.map_arg(a, lambda n: env[n.name])
 
         def fetch_attr(target : str):
+            """
+            recursively retrieves attributes from an object by splitting its path
+            into atoms and accessing them via the object's attributes, raising a
+            RuntimeError if any nonexistent target is found.
+
+            Args:
+                target (str): name of an attribute in the modifier, which is being
+                    fetched through a series of method calls.
+
+            Returns:
+                `object`.: the value of the specified attribute within the given
+                module.
+                
+                		- `target`: The input target for which the attributes are fetched.
+                (Passed as `str`.)
+                		- `target_atoms`: The split atoms of the input target. (Generated
+                as `list`).
+                		- `attr_itr`: An object instance that is iterated over to access
+                the attributes. (Passed as `object`.)
+                		- `i`: The iteration variable for iterating over the attribute
+                keys in the `target_atoms` list. (Generated as `int`).
+                
+
+            """
             target_atoms = target.split('.')
             attr_itr = self.mod
             for i, atom in enumerate(target_atoms):
