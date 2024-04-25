@@ -2,7 +2,7 @@
 
 This is the finished code associated with the YouTube tutorial at:
 
-**TODO**
+[![Quantization Aware Training (QAT) With a Custom DataLoader: Beginner's Tutorial to Training Loops](https://ytcards.demolab.com/?id=s3tqqBaRuHE&title=Quantization+Aware+Training+%28QAT%29+With+a+Custom+DataLoader%3A+Beginner%27s+Tutorial+to+Training+Loops&lang=en&timestamp=1712648353&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "Quantization Aware Training (QAT) With a Custom DataLoader: Beginner's Tutorial to Training Loops")](https://www.youtube.com/watch?v=s3tqqBaRuHE)
 
 This code is built from the code for the FX Graph mode tutorial, located in `Resnet-FX-Graph-Mode-Quant`. 
 However, we modularize some stuff, and build up some of the functions a bit more.
