@@ -16,6 +16,7 @@ from torch.ao.quantization.qconfig_mapping import QConfigMapping
 from torch.ao.quantization.quantize_fx import prepare_qat_fx
 import torch.quantization as tq
 from utils.ipdb_hook import ipdb_sys_excepthook
+import matplotlib.pyplot as plt
 
 from evaluate import evaluate
 from model.resnet import resnet18
@@ -158,6 +159,49 @@ evaluate(fx_model_no_cle, "cpu", "mail_box")
 ########################
 
 
+def per_channel_boxplots(weight_tensor: torch.Tensor, title: str, CLE: bool):
+    """
+    Given a weight tensor, plots its per-output-channel boxplots so we can
+    observe its dynamic range.
+    """
+    # Ensure the weight tensor is on the CPU
+    weight_tensor = weight_tensor.cpu()
+
+    # Get the number of output channels
+    num_output_channels = weight_tensor.shape[0]
+
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Create a list of data for each output channel
+    data = [weight_tensor[i].flatten().tolist() for i in range(num_output_channels)]
+
+    # Create the boxplots
+    ax.boxplot(data)
+
+    # Set the title and labels
+    CLE_str = "With_CLE" if CLE else "Without_CLE"
+    ax.set_title(f"{CLE_str}, {title}, Per-Output-Channel Weight Boxplots")
+    ax.set_xlabel("Output Channel")
+    ax.set_ylabel("Weight Value")
+
+    # Set the x-tick labels
+    ax.set_xticks(range(1, num_output_channels + 1))
+    ax.set_xticklabels(range(num_output_channels))
+
+    # Adjust the spacing and display the plot
+    plt.tight_layout()
+    plt.show()
+
+    # Save file
+    folder_path = Path(os.path.abspath("") + f"/Box_plots/{CLE_str}")
+    file_path = os.path.join(folder_path, f"{title}.png")
+    title = title.replace(".", "-")
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path, exist_ok=True)
+    fig.savefig(file_path, dpi=450)
+
+
 # ACTIVATION PLOTS
 def create_act_plots(model, title):
     def conditions_met_forward_act_hook(module: torch.nn.Module, name: str) -> bool:
@@ -227,6 +271,11 @@ def create_weight_plots(model, title):
 # # Original, non-Cross Layer Equalized plots
 # create_act_plots(fx_model_no_cle, "FX, no CLE")
 # create_weight_plots(fx_model_no_cle, "FX, no CLE")
+weight_tensor = fx_model_w_cle.layer2.get_submodule("0").conv1.weight
+per_channel_boxplots(weight_tensor, title="layer2.0.conv1", CLE=True)
+
+weight_tensor = fx_model_no_cle.layer2.get_submodule("0").conv1.weight
+per_channel_boxplots(weight_tensor, title="layer2.0.conv1", CLE=False)
 
 
 ###############
