@@ -55,6 +55,6 @@ cd Resnet-FX-CLE
 
 Then, just run `python main.py` from your command line! However I would obviously recommend that you follow along with the tutorial, so that you learn how it all works and get your hands dirty.
 
-The code is also available as a Jupyter Notebook, in case this is preferred.
+The code is also available as a Jupyter Notebook: `CLE_notebook.ipynb`, in case this is preferred.
 
 Let me know if there are any issues!
