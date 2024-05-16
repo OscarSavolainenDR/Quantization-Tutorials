@@ -30,3 +30,14 @@ In this tutorial series, we use Torch's FX Graph mode quantization to quantize a
 In this tutorial we look at how to do Quantization Aware Training (QAT) on an FX Graph Mode quantized Resnet. We build a small trianing lopp with a mini custom data loader. We also generalise the evaluate function we've been using in our tutorials to generalise to other images. We go looking for and find some of the danges of overfit.
 
 [![Quantization Aware Training (QAT) With a Custom DataLoader: Beginner's Tutorial to Training Loops](https://ytcards.demolab.com/?id=s3tqqBaRuHE&title=Quantization+Aware+Training+%28QAT%29+With+a+Custom+DataLoader%3A+Beginner%27s+Tutorial+to+Training+Loops&lang=en&timestamp=1712648353&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "Quantization Aware Training (QAT) With a Custom DataLoader: Beginner's Tutorial to Training Loops")](https://www.youtube.com/watch?v=s3tqqBaRuHE)
+
+
+# Cross Layer Equalization (CLE)
+
+In this tutorial, we look at Cross-Layer Equalization, a classic data-free method for
+improving the quantization of one's models. We use a graph-tracing method to find all of the
+layers we can do CLE on, do CLE, evaluate the results, and then visualize what's happening inside
+the model.
+
+[![Cross Layer Equalization: Everything You Need to Know](https://ytcards.demolab.com/?id=3eATdsWmHyI&title=Cross+Layer+Equalization%3A+Everything+You+Need+to+Know&lang=en&timestamp=1715768680&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "Cross Layer Equalization: Everything You Need to Know")](https://www.youtube.com/watch?v=3eATdsWmHyI)
+
