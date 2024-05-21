@@ -41,3 +41,4 @@ the model.
 
 [![Cross Layer Equalization: Everything You Need to Know](https://ytcards.demolab.com/?id=3eATdsWmHyI&title=Cross+Layer+Equalization%3A+Everything+You+Need+to+Know&lang=en&timestamp=1715768680&background_color=%230d1117&title_color=%23ffffff&stats_color=%23dedede&max_title_lines=1&width=250&border_radius=5 "Cross Layer Equalization: Everything You Need to Know")](https://www.youtube.com/watch?v=3eATdsWmHyI)
 
+
